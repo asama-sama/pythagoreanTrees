@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+    <title>Pythagorean Trees</title>
+    <!-- link to the last version of babylon -->
+    <script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
+    <style>
+
+</style>
+</head>
+<body onload="init();">
+  <canvas id="demoCanvas" width="500" height="300"></canvas>
+  <script>
+    var square_length = 40;
+    var CANVAS_WIDTH=500;
+    var CANVAS_HEIGHT=300;
+
+    var init_x = CANVAS_WIDTH/2;
+    var init_y = -250;
+    var iters = 0;
+    var MAX_ITERS = 9;
+
+    function init() {
+        var stage = new createjs.Stage("demoCanvas");
+        stage.scaleY=-1;
+
+        var g = new createjs.Graphics();
+        g.setStrokeStyle(1);
+        g.beginStroke("#000000");
+        g.beginFill("red");
+
+        var vec = {x: square_length, y: 0};
+
+        drawSquare({x: init_x, y: init_y}, vec, square_length, stage, iters);
+
+    }
+
+    function drawSquare(pos, vec, length, stage, iters) {
+        var line = new createjs.Shape();
+        stage.addChild(line);
+        line.graphics.setStrokeStyle(1).beginStroke("rgba(0,0,0,1)");
+
+        line.graphics.moveTo(pos.x, pos.y);
+        var x = pos.x; var y = pos.y;
+        var rv = Object.assign({}, vec);
+        for(var i=0; i<4; i++) {
+            x = x+rv.x;
+            y = y+rv.y;
+            line.graphics.lineTo(x, y);
+            rv = rotate90(rv);
+        }
+        //undo the last rotation
+        rv = rotate90Clock(rv);
+        // goes to top left corner
+        rv = {x: -rv.x, y: -rv.y};
+        line.graphics.endStroke();
+        stage.update();
+        var newPos = {x: x+rv.x, y: y+rv.y};
+
+        // vector in direction of other top corner of square
+        rv = rotate90Clock(rv);
+        drawTriangle(newPos, rv, length, stage, iters);
+    }
+
+    /* take {x, y} vector */
+    function rotate90(vec) {
+        return {x: -vec.y, y: vec.x};
+    }
+
+    function rotateRad(vec, rad) {
+        return {
+            x: vec.x*Math.cos(rad) - vec.y*Math.sin(rad), 
+            y: vec.x*Math.sin(rad) + vec.y*Math.cos(rad)};
+    }
+
+    function rotate90Clock(vec) {
+        return {x: vec.y, y: -vec.x};
+    }
+
+    function drawTriangle(pos, vec, length, stage, iters) {
+        var line = new createjs.Shape();
+        stage.addChild(line);
+        line.graphics.setStrokeStyle(1).beginStroke("rgba(0,0,0,1)");
+
+        var x = pos.x, y = pos.y;
+        line.graphics.moveTo(x, y);
+        // line.graphics.lineTo(pos.x+vec.x, pos.y+vec.y);
+        var rv = rotateRad(vec, Math.PI/4);
+        rv = {x: rv.x/Math.sqrt(2), y: rv.y/Math.sqrt(2)};
+        x = x+rv.x; y = y+rv.y;
+        var pt = {x: x, y: y};
+        line.graphics.lineTo(x, y);
+        
+        x = pos.x + vec.x; y = pos.y + vec.y;
+        line.graphics.lineTo(x, y);
+
+        line.graphics.endStroke();
+
+        stage.update();
+
+        iters++;
+        if(iters > MAX_ITERS) {
+            return;
+        }
+
+        drawSquare(pos, rv, length/Math.sqrt(2), stage, iters);
+        rv = rotate90Clock(rv);
+        drawSquare(pt, rv, length/Math.sqrt(2), stage, iters);
+    }
+  </script>`
+</body>
+</html>
