@@ -12,14 +12,15 @@
 <body onload="init();">
   <canvas id="demoCanvas" width="500" height="300"></canvas>
   <script>
-    var square_length = 40;
+    var square_length = 60;
     var CANVAS_WIDTH=500;
     var CANVAS_HEIGHT=300;
 
     var init_x = CANVAS_WIDTH/2;
     var init_y = -250;
     var iters = 0;
-    var MAX_ITERS = 9;
+    var MAX_ITERS = 7;
+    var TRI_ANGLE = Math.PI/6;
 
     function init() {
         var stage = new createjs.Stage("demoCanvas");
@@ -78,6 +79,19 @@
         return {x: vec.y, y: -vec.x};
     }
 
+    function scaleVec(vec, scale) {
+        var norm = getNorm(vec);
+        var newVec = {x: vec.x/norm, y: vec.y/norm};
+        newVec.x = newVec.x*scale;
+        newVec.y = newVec.y*scale;
+        return newVec;
+    }
+
+    function getNorm(vec) {
+        return Math.sqrt(
+            Math.pow(vec.x, 2) + Math.pow(vec.y, 2));
+    }
+    /* the input vector is in the direction along top of the last square */
     function drawTriangle(pos, vec, length, stage, iters) {
         var line = new createjs.Shape();
         stage.addChild(line);
@@ -85,18 +99,25 @@
 
         var x = pos.x, y = pos.y;
         line.graphics.moveTo(x, y);
-        // line.graphics.lineTo(pos.x+vec.x, pos.y+vec.y);
-        var rv = rotateRad(vec, Math.PI/4);
-        rv = {x: rv.x/Math.sqrt(2), y: rv.y/Math.sqrt(2)};
-        x = x+rv.x; y = y+rv.y;
-        var pt = {x: x, y: y};
+
+        // create the left part of the triangle
+        var leftVec = rotateRad(vec, TRI_ANGLE);
+        var l_length = length*Math.cos(TRI_ANGLE);
+        leftVec = scaleVec(leftVec, l_length);
+
+        x = x+leftVec.x; y = y+leftVec.y;
+        var topPt = {x: x, y: y};
         line.graphics.lineTo(x, y);
         
+        // create the right part of the triangle
+        var rightVec = {
+            x: pos.x + vec.x - x,
+            y: pos.y + vec.y - y
+        };
         x = pos.x + vec.x; y = pos.y + vec.y;
         line.graphics.lineTo(x, y);
 
         line.graphics.endStroke();
-
         stage.update();
 
         iters++;
@@ -104,9 +125,8 @@
             return;
         }
 
-        drawSquare(pos, rv, length/Math.sqrt(2), stage, iters);
-        rv = rotate90Clock(rv);
-        drawSquare(pt, rv, length/Math.sqrt(2), stage, iters);
+        drawSquare(pos, leftVec, l_length, stage, iters);
+        drawSquare(topPt, rightVec, getNorm(rightVec), stage, iters);
     }
   </script>`
 </body>
