@@ -10,34 +10,43 @@
 </style>
 </head>
 <body onload="init();">
-  <canvas id="demoCanvas" width="500" height="300"></canvas>
+  <canvas id="demoCanvas" width="500" height="500"></canvas>
+  <input type="range" name="anglepicker" min="0" max="1.57" step="any">
   <script>
     var square_length = 60;
     var CANVAS_WIDTH=500;
-    var CANVAS_HEIGHT=300;
+    var CANVAS_HEIGHT=500;
 
     var init_x = CANVAS_WIDTH/2;
-    var init_y = -250;
+    var init_y = -450;
     var iters = 0;
-    var MAX_ITERS = 7;
-    var TRI_ANGLE = Math.PI/6;
+    var MAX_ITERS = 6;
+    var TRI_ANGLE = Math.PI/4;
+    var ALTERNATE = false;
+
+    var stage;
+    var g;
 
     function init() {
-        var stage = new createjs.Stage("demoCanvas");
+        stage = new createjs.Stage("demoCanvas");
         stage.scaleY=-1;
 
-        var g = new createjs.Graphics();
+        g = new createjs.Graphics();
         g.setStrokeStyle(1);
         g.beginStroke("#000000");
         g.beginFill("red");
 
-        var vec = {x: square_length, y: 0};
-
-        drawSquare({x: init_x, y: init_y}, vec, square_length, stage, iters);
+        drawScene(TRI_ANGLE);
 
     }
 
-    function drawSquare(pos, vec, length, stage, iters) {
+    function drawScene(angle) {
+        var vec = {x: square_length, y: 0};
+
+        drawSquare({x: init_x, y: init_y}, vec, square_length, angle, stage, iters);
+    }
+
+    function drawSquare(pos, vec, length, angle, stage, iters) {
         var line = new createjs.Shape();
         stage.addChild(line);
         line.graphics.setStrokeStyle(1).beginStroke("rgba(0,0,0,1)");
@@ -61,7 +70,7 @@
 
         // vector in direction of other top corner of square
         rv = rotate90Clock(rv);
-        drawTriangle(newPos, rv, length, stage, iters);
+        drawTriangle(newPos, rv, length, angle, stage, iters);
     }
 
     /* take {x, y} vector */
@@ -92,7 +101,7 @@
             Math.pow(vec.x, 2) + Math.pow(vec.y, 2));
     }
     /* the input vector is in the direction along top of the last square */
-    function drawTriangle(pos, vec, length, stage, iters) {
+    function drawTriangle(pos, vec, length, s_angle, stage, iters) {
         var line = new createjs.Shape();
         stage.addChild(line);
         line.graphics.setStrokeStyle(1).beginStroke("rgba(0,0,0,1)");
@@ -100,9 +109,15 @@
         var x = pos.x, y = pos.y;
         line.graphics.moveTo(x, y);
 
+        var angle = s_angle;
+        // if the alternate flag is enabled and we get an odd iteration, reflect the triangle
+        if(ALTERNATE && !!(iters%2)) {
+            angle = Math.PI/2 - s_angle;
+        }
+
         // create the left part of the triangle
-        var leftVec = rotateRad(vec, TRI_ANGLE);
-        var l_length = length*Math.cos(TRI_ANGLE);
+        var leftVec = rotateRad(vec, angle);
+        var l_length = length*Math.cos(angle);
         leftVec = scaleVec(leftVec, l_length);
 
         x = x+leftVec.x; y = y+leftVec.y;
@@ -125,8 +140,18 @@
             return;
         }
 
-        drawSquare(pos, leftVec, l_length, stage, iters);
-        drawSquare(topPt, rightVec, getNorm(rightVec), stage, iters);
+        drawSquare(pos, leftVec, l_length, angle, stage, iters);
+        drawSquare(topPt, rightVec, getNorm(rightVec), angle, stage, iters);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('input[name="anglepicker"').onchange=logger;
+    });
+
+    function logger(e){
+        stage.removeAllChildren();
+        stage.update();
+        drawScene(e.target.value);
     }
   </script>`
 </body>
