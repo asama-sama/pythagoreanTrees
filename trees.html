@@ -11,7 +11,25 @@
 </head>
 <body onload="init();">
   <canvas id="demoCanvas" width="500" height="500"></canvas>
-  <input type="range" name="anglepicker" min="0" max="1.57" step="any">
+    <div>
+        <input type="checkbox" name="alternate">
+        <input type="range" name="anglepicker" min="0" max="3.14" step="any" value=".785">
+        <input name="iterations" type="range"  min="0" max="8" step="1" value="7">
+
+        <datalist id="tickmarks">
+          <option value="0">
+          <option value="10">
+          <option value="20">
+          <option value="30">
+          <option value="40">
+          <option value="50">
+          <option value="60">
+          <option value="70">
+          <option value="80">
+          <option value="90">
+          <option value="100">
+        </datalist>
+    </div>
   <script>
     var square_length = 60;
     var CANVAS_WIDTH=500;
@@ -20,9 +38,10 @@
     var init_x = CANVAS_WIDTH/2;
     var init_y = -450;
     var iters = 0;
-    var MAX_ITERS = 6;
+    var max_iters = 7;
     var TRI_ANGLE = Math.PI/4;
-    var ALTERNATE = false;
+    
+    var alternate = false;
 
     var stage;
     var g;
@@ -40,13 +59,13 @@
 
     }
 
-    function drawScene(angle) {
+    function drawScene() {
         var vec = {x: square_length, y: 0};
 
-        drawSquare({x: init_x, y: init_y}, vec, square_length, angle, stage, iters);
+        drawSquare({x: init_x, y: init_y}, vec, square_length, stage, iters);
     }
 
-    function drawSquare(pos, vec, length, angle, stage, iters) {
+    function drawSquare(pos, vec, length, stage, iters) {
         var line = new createjs.Shape();
         stage.addChild(line);
         line.graphics.setStrokeStyle(1).beginStroke("rgba(0,0,0,1)");
@@ -70,7 +89,7 @@
 
         // vector in direction of other top corner of square
         rv = rotate90Clock(rv);
-        drawTriangle(newPos, rv, length, angle, stage, iters);
+        drawTriangle(newPos, rv, length, stage, iters);
     }
 
     /* take {x, y} vector */
@@ -101,7 +120,7 @@
             Math.pow(vec.x, 2) + Math.pow(vec.y, 2));
     }
     /* the input vector is in the direction along top of the last square */
-    function drawTriangle(pos, vec, length, s_angle, stage, iters) {
+    function drawTriangle(pos, vec, length, stage, iters) {
         var line = new createjs.Shape();
         stage.addChild(line);
         line.graphics.setStrokeStyle(1).beginStroke("rgba(0,0,0,1)");
@@ -109,10 +128,10 @@
         var x = pos.x, y = pos.y;
         line.graphics.moveTo(x, y);
 
-        var angle = s_angle;
+        var angle = TRI_ANGLE;
         // if the alternate flag is enabled and we get an odd iteration, reflect the triangle
-        if(ALTERNATE && !!(iters%2)) {
-            angle = Math.PI/2 - s_angle;
+        if(alternate && !!(iters%2)) {
+            angle = Math.PI/2 - angle;
         }
 
         // create the left part of the triangle
@@ -136,22 +155,39 @@
         stage.update();
 
         iters++;
-        if(iters > MAX_ITERS) {
+        if(iters > max_iters) {
             return;
         }
 
-        drawSquare(pos, leftVec, l_length, angle, stage, iters);
-        drawSquare(topPt, rightVec, getNorm(rightVec), angle, stage, iters);
+        drawSquare(pos, leftVec, l_length, stage, iters);
+        drawSquare(topPt, rightVec, getNorm(rightVec), stage, iters);
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-            document.querySelector('input[name="anglepicker"').onchange=logger;
+            document.querySelector('input[name="anglepicker"').onchange=updateAngle;
+            document.querySelector('input[name="alternate"').onchange=alternateAngles;
+            document.querySelector('input[name="iterations"').onchange=updateIterations;
     });
 
-    function logger(e){
+    function updateAngle(e){
         stage.removeAllChildren();
         stage.update();
-        drawScene(e.target.value);
+        TRI_ANGLE = e.target.value;
+        drawScene();
+    }
+
+    function alternateAngles(e) {
+        alternate = e.target.checked;
+        stage.removeAllChildren();
+        stage.update();
+        drawScene();
+    }
+
+    function updateIterations(e) {
+        max_iters = e.target.value;
+        stage.removeAllChildren();
+        stage.update();
+        drawScene();
     }
   </script>`
 </body>
