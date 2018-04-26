@@ -1,0 +1,12 @@
+html {
+  font-family: sans-serif;
+}
+
+input.ui-text{
+  width: 30px;
+}
+
+.ui-labels {
+  display: inline-block;
+  width: 100px;
+}

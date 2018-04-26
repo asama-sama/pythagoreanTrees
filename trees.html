@@ -5,16 +5,26 @@
     <title>Pythagorean Trees</title>
     <!-- link to the last version of babylon -->
     <script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
-    <style>
+    <link rel="stylesheet" type="text/css" href="trees.css" />
 
-</style>
 </head>
 <body onload="init();">
   <canvas id="demoCanvas" width="500" height="500"></canvas>
     <div>
-        <input type="checkbox" name="alternate">
-        <input type="range" name="anglepicker" min="0" max="3.14" step="any" value=".785">
-        <input name="iterations" type="range"  min="0" max="8" step="1" value="7">
+        <div>
+            <label class="ui-labels">Alternate</label>
+            <input type="checkbox" name="alternate">
+        </div>
+        <div>
+            <label class="ui-labels">Angle (deg)</label>
+            <input type="range" name="anglepicker" min="0" max="3.14" step="any" value=".785">
+            <input type="text" name="anglevalue" readonly value="45" class="ui-text">
+        </div>
+        <div>
+            <label class="ui-labels">Iterations</label>
+            <input name="iterations" type="range"  min="0" max="8" step="1" value="7">
+            <input type="text" readonly name="iterationsvalue" value="7" class="ui-text">
+        </div>
 
         <datalist id="tickmarks">
           <option value="0">
@@ -173,6 +183,7 @@
         stage.removeAllChildren();
         stage.update();
         TRI_ANGLE = e.target.value;
+        document.querySelector('input[name="anglevalue"').value=(e.target.value*180/Math.PI).toFixed(2);
         drawScene();
     }
 
@@ -186,6 +197,7 @@
     function updateIterations(e) {
         max_iters = e.target.value;
         stage.removeAllChildren();
+        document.querySelector('input[name="iterationsvalue"').value=e.target.value;
         stage.update();
         drawScene();
     }
